@@ -1,5 +1,6 @@
 package dvserh.notepage_sqlite
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -19,22 +20,13 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         myDbManager.openDB()
-        val dataList = myDbManager.readDbData()
-        for( item in dataList) {
-            binding.tvText.append(item)
-            binding.tvText.append("\n")
-        }
+
     }
 
-    fun onClickSave(view: View) {
-        binding.tvText.text = " "
+    fun onClickNew(view: View) {
+        val i = Intent(this, EditActivity::class.java)
+        startActivity(i)
 
-        myDbManager.insertToDb(binding.edTitle.text.toString(), binding.edContent.text.toString())
-        val dataList = myDbManager.readDbData()
-        for( item in dataList) {
-            binding.tvText.append(item)
-            binding.tvText.append("\n")
-        }
     }
 
     override fun onDestroy() {

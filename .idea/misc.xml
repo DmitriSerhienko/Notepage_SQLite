@@ -3,7 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/38093/AndroidStudioProjects/Notepage_SQLite/app/src/main/res/drawable-anydpi/ic_add.xml" value="0.14" />
+        <entry key="..\:/Users/38093/AndroidStudioProjects/Notepage_SQLite/app/src/main/res/drawable-anydpi/ic_save.xml" value="0.157" />
         <entry key="..\:/Users/38093/AndroidStudioProjects/Notepage_SQLite/app/src/main/res/layout/activity_main.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/38093/AndroidStudioProjects/Notepage_SQLite/app/src/main/res/layout/edit_activity.xml" value="0.25416666666666665" />
       </map>
     </option>
   </component>
