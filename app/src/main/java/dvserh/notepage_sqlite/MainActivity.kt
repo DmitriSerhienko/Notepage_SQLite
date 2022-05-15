@@ -20,7 +20,10 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         myDbManager.openDB()
-
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        myDbManager.closeDb()
     }
 
     fun onClickNew(view: View) {
@@ -29,8 +32,5 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        myDbManager.closeDb()
-    }
+
 }
