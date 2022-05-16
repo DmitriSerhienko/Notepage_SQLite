@@ -7,16 +7,25 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import com.example.lessonsqlite.db.MyDbManager
 import dvserh.notepage_sqlite.databinding.EditActivityBinding
-import dvserh.notepage_sqlite.db.ListItem
 import dvserh.notepage_sqlite.db.MyIntentConstance
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class EditActivity : AppCompatActivity() {
     lateinit var binding: EditActivityBinding
+    private var editLauncher: ActivityResultLauncher<Intent>? =
+        null                                                    //- переписать что б картинка тянулась с памяти телефона
     var id = 0
     var isEditState = false
-    var tempImageUri = "empty"
+    var tempImageUri =
+        "empty"                                             //- переписать что б картинка тянулась с памяти телефона
     val myDbManager = MyDbManager(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,14 +45,22 @@ class EditActivity : AppCompatActivity() {
         myDbManager.closeDb()
     }
 
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//        if (resultCode == Activity.RESULT_OK) {            //моя строка
-//            binding.imMainImage.setImageURI(data?.data)
-//            tempImageUri = data?.data.toString()
-//            contentResolver.takePersistableUriPermission(data?.data!!, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-//        }
-//    }
+
+    override fun onActivityResult(                                                 // не работает подгружение картинки с телефона
+        requestCode: Int,                                                         // - переписать что б картинка тянулась с памяти телефона
+        resultCode: Int,
+        data: Intent?,
+    ) {
+        super.onActivityResult(requestCode, resultCode, data)
+        editLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (resultCode == Activity.RESULT_OK) {
+                binding.imMainImage.setImageURI(data?.data)
+                tempImageUri = data?.data.toString()
+                contentResolver.takePersistableUriPermission(data?.data!!,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        }
+    }
 
 
     fun onClickAddImage(view: View) {
@@ -56,14 +73,13 @@ class EditActivity : AppCompatActivity() {
         binding.fbAddImage.visibility = View.VISIBLE
     }
 
-    fun onClickChooseImage(view: View) {
+
+    fun onClickChooseImage(view: View) {                                      // - переписать что б картинка тянулась с памяти телефона
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.type = "image/*"
-
-        intent.putExtra("key", intent.type) // моя строка
-        setResult(RESULT_OK, intent)  // моя строка
-        startActivity(intent) // моя строка
-
+        intent.putExtra("key", intent.type)                                 // моя строка
+        setResult(RESULT_OK, intent)                                                // моя строка
+        startActivity(intent)                                                       // моя строка
     }
 
 
@@ -72,12 +88,16 @@ class EditActivity : AppCompatActivity() {
         val myDesc = binding.edDesc.text.toString()
 
         if (myTitle != "" && myDesc != "") {
-            if (isEditState) {
-                myDbManager.updateIten(myTitle, myDesc, tempImageUri, id)
-            } else {
-                myDbManager.insertToDb(myTitle, myDesc, tempImageUri)
+
+            CoroutineScope(Dispatchers.Main).launch {
+                if (isEditState) {
+                    myDbManager.updateIten(myTitle, myDesc, tempImageUri.toString(), id, getCurTime() )
+                } else {
+                    myDbManager.insertToDb(myTitle, myDesc, tempImageUri.toString(), getCurTime())
+                }
+                finish()
             }
-            finish()
+
         }
     }
 
@@ -100,7 +120,8 @@ class EditActivity : AppCompatActivity() {
                 if (i.getStringExtra(MyIntentConstance.I_URI_KEY) != "empty") {
 
                     binding.mainImageLayout.visibility = View.VISIBLE
-                    binding.imMainImage.setImageURI(Uri.parse(i.getStringExtra(MyIntentConstance.I_URI_KEY)))
+                   tempImageUri = i.getStringExtra(MyIntentConstance.I_URI_KEY)!!     //- переписать что б картинка тянулась с памяти телефона
+                 binding.imMainImage.setImageURI(Uri.parse(tempImageUri))          //- переписать что б картинка тянулась с памяти телефона
                     binding.imButtonDelete.visibility = View.GONE
                     binding.imButtonEditImage.visibility = View.GONE
 
@@ -113,5 +134,15 @@ class EditActivity : AppCompatActivity() {
         binding.edTitle.isEnabled = true
         binding.edDesc.isEnabled = true
         binding.fbEdit.visibility = View.GONE
+        binding.fbAddImage.visibility = View.VISIBLE
+        if (tempImageUri == "empty") return                     // - переписать что б картинка тянулась с памяти телефона
+        binding.imButtonEditImage.visibility = View.VISIBLE
+        binding.imButtonDelete.visibility = View.VISIBLE
+    }
+
+    private fun getCurTime(): String {
+        val time = Calendar.getInstance().time
+        val formatter = SimpleDateFormat("dd-MM-yy kk:mm", Locale.getDefault())
+        return formatter.format(time)
     }
 }
