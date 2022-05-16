@@ -14,6 +14,8 @@ import dvserh.notepage_sqlite.db.MyIntentConstance
 
 class EditActivity : AppCompatActivity() {
     lateinit var binding: EditActivityBinding
+    var id = 0
+    var isEditState = false
     var tempImageUri = "empty"
     val myDbManager = MyDbManager(this)
 
@@ -36,9 +38,10 @@ class EditActivity : AppCompatActivity() {
 
 //    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 //        super.onActivityResult(requestCode, resultCode, data)
-//        if (resultCode == Activity.RESULT_OK && requestCode == "key") {            //моя строка
+//        if (resultCode == Activity.RESULT_OK) {            //моя строка
 //            binding.imMainImage.setImageURI(data?.data)
 //            tempImageUri = data?.data.toString()
+//            contentResolver.takePersistableUriPermission(data?.data!!, Intent.FLAG_GRANT_READ_URI_PERMISSION)
 //        }
 //    }
 
@@ -56,7 +59,6 @@ class EditActivity : AppCompatActivity() {
     fun onClickChooseImage(view: View) {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.type = "image/*"
-        intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
 
         intent.putExtra("key", intent.type) // моя строка
         setResult(RESULT_OK, intent)  // моя строка
@@ -70,12 +72,17 @@ class EditActivity : AppCompatActivity() {
         val myDesc = binding.edDesc.text.toString()
 
         if (myTitle != "" && myDesc != "") {
-            myDbManager.insertToDb(myTitle, myDesc, tempImageUri)
+            if (isEditState) {
+                myDbManager.updateIten(myTitle, myDesc, tempImageUri, id)
+            } else {
+                myDbManager.insertToDb(myTitle, myDesc, tempImageUri)
+            }
             finish()
         }
     }
 
     fun getMyIntents() {
+        binding.fbEdit.visibility = View.GONE
         val i = intent
 
         if (i != null) {
@@ -83,9 +90,15 @@ class EditActivity : AppCompatActivity() {
             if (i.getStringExtra(MyIntentConstance.I_TITLE_KEY) != null) {
                 binding.fbAddImage.visibility = View.GONE
                 binding.edTitle.setText(i.getStringExtra(MyIntentConstance.I_TITLE_KEY))
+                isEditState = true
+                binding.edTitle.isEnabled = false
+                binding.edDesc.isEnabled = false
+                binding.fbEdit.visibility = View.VISIBLE
                 binding.edDesc.setText(i.getStringExtra(MyIntentConstance.I_DESC_KEY))
-                binding.imMainImage.setImageResource(R.drawable.bk_1)
+                id = i.getIntExtra(MyIntentConstance.I_ID_KEY, 0)
+                binding.imMainImage.setImageResource(R.drawable.bk_1)                                //моя строка
                 if (i.getStringExtra(MyIntentConstance.I_URI_KEY) != "empty") {
+
                     binding.mainImageLayout.visibility = View.VISIBLE
                     binding.imMainImage.setImageURI(Uri.parse(i.getStringExtra(MyIntentConstance.I_URI_KEY)))
                     binding.imButtonDelete.visibility = View.GONE
@@ -94,7 +107,11 @@ class EditActivity : AppCompatActivity() {
                 }
             }
         }
+    }
 
-
+    fun onEditEnable(view: View) {
+        binding.edTitle.isEnabled = true
+        binding.edDesc.isEnabled = true
+        binding.fbEdit.visibility = View.GONE
     }
 }

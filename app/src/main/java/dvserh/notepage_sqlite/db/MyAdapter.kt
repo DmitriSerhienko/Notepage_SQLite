@@ -7,25 +7,28 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.lessonsqlite.db.MyDbManager
 import dvserh.notepage_sqlite.EditActivity
 import dvserh.notepage_sqlite.R
 
-class MyAdapter(listMain: ArrayList<ListItem>, contextM: Context) : RecyclerView.Adapter<MyAdapter.MyHolder>() {
+class MyAdapter(listMain: ArrayList<ListItem>, contextM: Context) :
+    RecyclerView.Adapter<MyAdapter.MyHolder>() {
     var listArray = listMain
     var context = contextM
 
-    class MyHolder(itemView: View, contextV: Context): RecyclerView.ViewHolder (itemView) {
+    class MyHolder(itemView: View, contextV: Context) : RecyclerView.ViewHolder(itemView) {
         val tvTitle = itemView.findViewById<TextView>(R.id.tvTitle)
         val context = contextV
 
-        fun setData(item: ListItem){
+        fun setData(item: ListItem) {
             tvTitle.text = item.title
-            itemView.setOnClickListener{
-                val intent = Intent(context, EditActivity::class.java).apply{
+            itemView.setOnClickListener {
+                val intent = Intent(context, EditActivity::class.java).apply {
 
                     putExtra(MyIntentConstance.I_TITLE_KEY, item.title)
                     putExtra(MyIntentConstance.I_DESC_KEY, item.descr)
                     putExtra(MyIntentConstance.I_URI_KEY, item.uri)
+                    putExtra(MyIntentConstance.I_ID_KEY, item.id)
                 }
                 context.startActivity(intent)
             }
@@ -50,6 +53,15 @@ class MyAdapter(listMain: ArrayList<ListItem>, contextM: Context) : RecyclerView
         listArray.clear()
         listArray.addAll(listItems)
         notifyDataSetChanged()
+
+    }
+
+    fun removeItem(pos: Int, dbManager: MyDbManager) {
+
+        dbManager.removeItemfromDb(listArray[pos].id.toString())
+        listArray.removeAt(pos)
+        notifyItemRangeChanged(0, listArray.size)
+        notifyItemRemoved(pos)
 
     }
 }
